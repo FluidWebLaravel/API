@@ -1,0 +1,56 @@
+use Illuminate\Http\Request;
+use GuzzleHttp\Client;
+
+Route::middleware('auth:api')->get('/linkedin-profile', function (Request $request) {
+    $client = new Client();
+    $response = $client->get('https://api.linkedin.com/v2/me', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $request->user()->access_token,
+            'Accept' => 'application/json',
+        ],
+    ]);
+    return $response->getBody();
+});
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use GuzzleHttp\Client;
+
+class LinkedInController extends Controller
+{
+    public function getUserProfile(Request $request)
+    {
+        $client = new Client();
+        $response = $client->get('https://api.linkedin.com/v2/me', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $request->user()->access_token,
+                'Accept' => 'application/json',
+            ],
+        ]);
+        return $response->getBody();
+    }
+}
+use App\Http\Controllers\LinkedInController;
+
+Route::middleware('auth:api')->get('/linkedin-profile', [LinkedInController::class, 'getUserProfile']);
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AddAccessTokenToUsersTable extends Migration
+{
+    public function up()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('access_token')->nullable();
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('access_token');
+        });
+    }
+}
+
